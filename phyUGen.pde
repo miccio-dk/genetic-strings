@@ -36,7 +36,7 @@ public class PhyUGen extends UGen
         for (int j = 0; j < N_COLS; ++j) {
           Specimen s = new Specimen(GeneticUtils.specimenOrigin(i, j));
           for (int k = 0; k < 5; ++k) {
-            s.mutate();
+            s.genome.mutate(0.1);
           }
           this.population.add(s);
         }
@@ -55,8 +55,8 @@ public class PhyUGen extends UGen
       // add specimens to model
       this.addPlucktoModel(mdl);
       int i = 0;
-      for(Specimen specimen : this.population) {
-        specimen.addToModel(this.mdl, ""+i);
+      for(Specimen s : this.population) {
+        s.addToModel(this.mdl, ""+i);
         i++;
       }      
       this.mdl.init();
@@ -98,9 +98,22 @@ public class PhyUGen extends UGen
 
   void evolve() {
     this.view.resetShapes();
-    for (int i = 0; i < 1; ++i) {
-      for(Specimen specimen : this.population) {
-        specimen.mutate();
+    for (int i = 0; i < 3; ++i) {
+      for(Specimen s : this.population) {
+        s.genome.mutate(0.05);
+      }
+    }
+    this.initModel();
+    this.view.initShapes(this.mdl);
+  }
+
+
+  void evolveFromSpecimen(Specimen parent) {
+    this.view.resetShapes();
+    for (int i = 0; i < 3; ++i) {
+      for(Specimen s : this.population) {
+        s.genome = new Genome(parent.genome);
+        s.genome.mutate(0.05);
       }
     }
     this.initModel();
@@ -140,8 +153,8 @@ public class PhyUGen extends UGen
       this.mdl.computeStep();
 
       // calculate the sample value
-      for(Specimen specimen : this.population) {
-        sample += specimen.getSample(this.mdl);
+      for(Specimen s : this.population) {
+        sample += s.getSample(this.mdl);
       }
 
       // high pass filter

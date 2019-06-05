@@ -87,10 +87,4 @@ public class Specimen {
     }
     return sample / (N_ROWS*N_COLS);
   }
-
-
-  void mutate() {
-    println("Specimen.mutate");
-    this.genome.randomize(0.1);
-  }
 }

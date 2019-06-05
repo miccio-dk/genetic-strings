@@ -52,5 +52,8 @@ void draw() {
 
 
 void mouseReleased() {
-  simUGen.evolve();
+  Specimen selected = simUGen.getSelectedSpecimen();
+  if(selected != null) {
+    simUGen.evolveFromSpecimen(selected);
+  }
 }
