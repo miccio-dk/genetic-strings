@@ -25,17 +25,22 @@ public class PhyUGen extends UGen
     this.initModel(sampleRate);
   }
 
+
   void createInitialPopulation() {
-    float dist = 8;
+    float margin = 2;
+
     int n_cols = 4;
-    int n_rows = 3;
+    int n_rows = 4;
     synchronized(lock) {
       this.population = new ArrayList<Specimen>();
+      float offset_x = (n_cols*STRING_LEN)/2 + ((n_cols+1)*margin)/2;
+      float offset_y = (n_rows*STRING_LEN)/2 + ((n_rows+1)*margin)/2;
+
       for (int i = 0; i < n_rows; ++i) {
         for (int j = 0; j < n_cols; ++j) {
           this.population.add(new Specimen(
-              -(dist * n_cols)/2 + (j%n_cols)*dist, 
-              -(dist * n_rows)/2 + (i%n_rows)*dist));
+              margin + (STRING_LEN+margin)*j - offset_x, 
+              margin + (STRING_LEN+margin)*i - offset_y));
         }
       }
     }
@@ -63,14 +68,18 @@ public class PhyUGen extends UGen
     }
   }
 
+
   void spin() {
     this.view.renderShapes(this.mdl);
   }
 
 
   void foo() {
-    for(Specimen specimen : this.population) {
-      specimen.genome.randomize(0.15);
+    this.view.resetShapes();
+    for (int i = 0; i < 1; ++i) {
+      for(Specimen specimen : this.population) {
+        specimen.genome.randomize(0.15);
+      }
     }
     this.initModel((int)sampleRate());
   }
@@ -82,23 +91,19 @@ public class PhyUGen extends UGen
     mdl.addMass2DPlane("guideM2", 1000000000, new Vect3D(4,-4,0.), vect3D0);
     mdl.addMass2DPlane("guideM3", 1000000000, new Vect3D(3,-3,0.), vect3D0); 
     mdl.addMass3D("percMass", 100, vect3D0, vect3D0);
-    mdl.addSpringDamper3D("test", 1, 1, 1., "guideM1", "percMass");
-    mdl.addSpringDamper3D("test", 1, 1, 1., "guideM2", "percMass");
-    mdl.addSpringDamper3D("test", 1, 1, 1., "guideM3", "percMass");
+    mdl.addSpringDamper3D("test", 0.1, 1, 1., "guideM1", "percMass");
+    mdl.addSpringDamper3D("test", 0.1, 1, 1., "guideM2", "percMass");
+    mdl.addSpringDamper3D("test", 0.1, 1, 1., "guideM3", "percMass");
   }
   
-  /*
-   * This routine will be called any time the sample rate changes.
-   */
-  protected void sampleRateChanged()
-  {
+
+  protected void sampleRateChanged() {
     this.mdl.setSimRate((int)sampleRate());
   }
 
 
   @Override
-  protected void uGenerate(float[] channels)
-  {
+  protected void uGenerate(float[] channels) {
     float sample = 0;
     synchronized(lock) {
       float x = 30*(float)mouseX / width - 15;
@@ -117,7 +122,7 @@ public class PhyUGen extends UGen
         sample += specimen.getSample(this.mdl);
       }
 
-      /* High pass filter to remove the DC offset */
+      // high pass filter
       audioOut = sample - prevSample + 0.95 * audioOut;
       prevSample = sample;
 

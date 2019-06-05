@@ -18,10 +18,12 @@ float currAudio = 0;
 
 void setup()
 {
-  size(1000, 700, P3D);
+  size(800, 800, P3D);
   //fullScreen(P3D,2);
   cam = new PeasyCam(this, 1000);
   cam.setDistance(2500);
+  cam.setActive(false);
+  //ortho(-width/2,width/2,-height/2,height/2,-200,200);
   
   minim = new Minim(this);
   
@@ -55,10 +57,11 @@ void draw()
   stroke(125,125,255);
   strokeWeight(2);
   fill(0,0,60, 220);
-  rect(0,0, 250, 50);
+  rect(0,0, 250, 60);
   textSize(16);
   fill(255, 255, 255);
   text("Curr Audio: " + currAudio, 10, 30);
+  text("FPS: " + frameRate, 10, 45);
   cam.endHUD();
 
 }

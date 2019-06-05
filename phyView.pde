@@ -13,73 +13,89 @@ public class phyView {
         sketchRef = pa;
     }
 
+
     void initShapes(PhysicalModel mdl) {
         println("phyView.initShapes");
         println("number of elements: "+mdl.getNumberOfMats());
         for ( int i = 0; i < mdl.getNumberOfMats(); i++) {
+            float size = (float)mdl.getMatMassAt(i);
             switch (mdl.getMatTypeAt(i)) {
             case Mass3D:
-                addColoredShape(mdl.getMatPosAt(i).toPVector(), color(120, 120, 0), 40);
+                addColoredShape(
+                    mdl.getMatPosAt(i).toPVector(), 
+                    color(120, 120, 0), 
+                    40);
                 break;
             case Mass2DPlane:
-                addColoredShape(mdl.getMatPosAt(i).toPVector(), color(120, 0, 120), 10);
+                addColoredShape(
+                    mdl.getMatPosAt(i).toPVector(), 
+                    color(120, 0, 120), 
+                    size);
                 break;
             case Ground3D:
-                addColoredShape(mdl.getMatPosAt(i).toPVector(), color(30, 100, 100), 25);
+                addColoredShape(
+                    mdl.getMatPosAt(i).toPVector(), 
+                    color(30, 100, 100), 
+                    25);
                 break; 
-            case HapticInput3D:
-                addColoredShape(mdl.getMatPosAt(i).toPVector(), color(255, 10, 10), 40);
-                break; 
-            case Osc3D:
-                addColoredShape(mdl.getMatPosAt(i).toPVector(), color(30, 0, 230), 40);
-                break;
             case UNDEFINED:
                 break;
             }
         }
     }
+
 
     void renderShapes(PhysicalModel mdl) {
         //println("phyView.renderShapes");
         PVector v;
         synchronized(lock) { 
-        for ( int i = 0; i < mdl.getNumberOfMats(); i++) {
-            v = mdl.getMatPosAt(i).toPVector().mult(100.);
-            this.shapes.get(i).moveTo(v.x, v.y, v.z);
-        }
+            for ( int i = 0; i < mdl.getNumberOfMats(); i++) {
+                v = mdl.getMatPosAt(i).toPVector().mult(100.);
+                this.shapes.get(i).moveTo(v.x, v.y, v.z);
+            }
 
-        for ( int i = 0; i < mdl.getNumberOfLinks(); i++) {
-            switch (mdl.getLinkTypeAt(i)) {
-            case Spring3D:
-            stroke(0, 255, 0);
-            drawLine(mdl.getLinkPos1At(i), mdl.getLinkPos2At(i));
-            break;
-            case Damper3D:
-            stroke(125, 125, 125);
-            drawLine(mdl.getLinkPos1At(i), mdl.getLinkPos2At(i));
-            break; 
-            case SpringDamper3D:
-            stroke(0, 0, 255);
-            drawLine(mdl.getLinkPos1At(i), mdl.getLinkPos2At(i));
-            break;
-            case Rope3D:
-            stroke(210, 235, 110);
-            drawLine(mdl.getLinkPos1At(i), mdl.getLinkPos2At(i));
-            break;
-            case Contact3D:
-            break; 
-            case PlaneContact3D:
-            break;
-            case UNDEFINED:
-            break;
+            for ( int i = 0; i < mdl.getNumberOfLinks(); i++) {
+                float weight = (float)(1 - mdl.getLinkElongationAt(i) / mdl.getLinkDistanceAt(i) - 0.0007) * 3000;
+                if(weight > 10) {
+                    weight = 1;
+                }
+                
+                switch (mdl.getLinkTypeAt(i)) {
+                case Spring3D:
+                    stroke(0, 255, 0);
+                    strokeWeight(weight);
+                    drawLine(mdl.getLinkPos1At(i), mdl.getLinkPos2At(i));
+                    break;
+                case Damper3D:
+                    stroke(125, 125, 125);
+                    strokeWeight(weight);
+                    drawLine(mdl.getLinkPos1At(i), mdl.getLinkPos2At(i));
+                    break; 
+                case SpringDamper3D:
+                    stroke(0, 0, 255);
+                    strokeWeight(weight);
+                    drawLine(mdl.getLinkPos1At(i), mdl.getLinkPos2At(i));
+                    break;
+                case Contact3D:
+                    break; 
+                case UNDEFINED:
+                    break;
+                }
             }
         }
-        }
-
         for (Ellipsoid shape : shapes) {
             shape.draw();
         }
     }
+
+
+    void resetShapes() {
+        for (Ellipsoid shape : shapes) {
+            shape.finishedWith();
+        }
+        shapes.clear();
+    }
+
 
     void addColoredShape(PVector pos, color col, float size) {
         //println("phyView.addColoredShape");

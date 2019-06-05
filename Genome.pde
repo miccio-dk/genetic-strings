@@ -1,14 +1,5 @@
 import java.util.Arrays;
 
-static class GeneticUtils {
-    static float randomize(float val, float factor) {
-        float min = val * (1 - factor);
-        float max = val * (1 + factor);
-        float rand_val = min + (float)Math.random() * (max - min);
-        return rand_val;
-    }
-}
-
 class MassGene {
     float mass;
 
@@ -59,11 +50,11 @@ public class Genome {
     
     void initGenome() {
         for(int i=0; i<this.n_masses; i++) {
-            this.masses.add(new MassGene(10));
+            this.masses.add(new MassGene(20));
         }
 
         for(int i=0; i<(this.n_masses+1); i++) {
-            this.springs.add(new SpringGene(0.1, 0.1, 0.1));
+            this.springs.add(new SpringGene(0.0001, 1, 0.1));
         }
     }
 
