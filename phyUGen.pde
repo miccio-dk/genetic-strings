@@ -17,71 +17,94 @@ public class PhyUGen extends UGen
   PhysicalModel mdl;
 
 
-  public PhyUGen(PApplet pa, int sampleRate)
+  public PhyUGen(PApplet pa)
   {
     super();
+    // create population, init model and 3d shapes
     this.view = new phyView(pa);
     this.createInitialPopulation();
-    this.initModel(sampleRate);
+    this.initModel();
+    this.view.initShapes(this.mdl);
   }
 
 
   void createInitialPopulation() {
-    float margin = 2;
-
-    int n_cols = 4;
-    int n_rows = 4;
     synchronized(lock) {
       this.population = new ArrayList<Specimen>();
-      float offset_x = (n_cols*STRING_LEN)/2 + ((n_cols+1)*margin)/2;
-      float offset_y = (n_rows*STRING_LEN)/2 + ((n_rows+1)*margin)/2;
-
-      for (int i = 0; i < n_rows; ++i) {
-        for (int j = 0; j < n_cols; ++j) {
-          this.population.add(new Specimen(
-              margin + (STRING_LEN+margin)*j - offset_x, 
-              margin + (STRING_LEN+margin)*i - offset_y));
+      // add specimens to population
+      for (int i = 0; i < N_ROWS; ++i) {
+        for (int j = 0; j < N_COLS; ++j) {
+          Specimen s = new Specimen(GeneticUtils.specimenOrigin(i, j));
+          for (int k = 0; k < 5; ++k) {
+            s.mutate();
+          }
+          this.population.add(s);
         }
       }
     }
   }
 
 
-  void initModel(int sampleRate) {
+  void initModel() {
     synchronized(lock) {
       // setup model
-      this.mdl = new PhysicalModel(sampleRate, BASE_FRAMERATE);
+      this.mdl = new PhysicalModel(BASE_SAMPLERATE, BASE_FRAMERATE);
       this.mdl.setGravity(GRAVITY);
       this.mdl.setFriction(FRICTION);
 
-      // add elements
+      // add specimens to model
       this.addPlucktoModel(mdl);
       int i = 0;
       for(Specimen specimen : this.population) {
         specimen.addToModel(this.mdl, ""+i);
         i++;
-      }
-      
-      // init model and 3d shapes
+      }      
       this.mdl.init();
-      this.view.initShapes(this.mdl);
     }
   }
 
 
   void spin() {
     this.view.renderShapes(this.mdl);
+    Specimen selected = getSelectedSpecimen();
+    if(selected != null) {
+      this.view.highlightSelectedSpecimen(selected.position);
+    }
+  }
+
+  
+  Specimen getSelectedSpecimen() {
+    Vect3D mouse = GeneticUtils.mouseCoords(mouseX, mouseY, width, height);
+    Vect3D sorig;
+    int index = 0;
+
+    for (int i = 0; i < N_ROWS; ++i) {
+      for (int j = 0; j < N_COLS; ++j) {
+        // extract current specimen pos
+        sorig = population.get(index).position;
+        // check boundaries
+        if(mouse.x > sorig.x && 
+            mouse.x < (sorig.x+STRING_LEN) && 
+            mouse.y > sorig.y && 
+            mouse.y < (sorig.y+STRING_LEN)) {
+          return population.get(index);
+        }
+        index++;
+      }
+    }
+    return null;
   }
 
 
-  void foo() {
+  void evolve() {
     this.view.resetShapes();
     for (int i = 0; i < 1; ++i) {
       for(Specimen specimen : this.population) {
-        specimen.genome.randomize(0.15);
+        specimen.mutate();
       }
     }
-    this.initModel((int)sampleRate());
+    this.initModel();
+    this.view.initShapes(this.mdl);
   }
 
 
@@ -106,11 +129,10 @@ public class PhyUGen extends UGen
   protected void uGenerate(float[] channels) {
     float sample = 0;
     synchronized(lock) {
-      float x = 30*(float)mouseX / width - 15;
-      float y = 30*(float)mouseY / height - 15;
+      Vect3D mouse = GeneticUtils.mouseCoords(mouseX, mouseY, width, height);
       
-      x_avg = (1-smooth) * x_avg + (smooth) * x;
-      y_avg = (1-smooth) * y_avg + (smooth) * y;
+      x_avg = (1-smooth) * x_avg + (smooth) * (float)mouse.x;
+      y_avg = (1-smooth) * y_avg + (smooth) * (float)mouse.y;
       
       this.mdl.setMatPosition("guideM1", new Vect3D(x_avg-1, y_avg, 0));
       this.mdl.setMatPosition("guideM2", new Vect3D(x_avg+1, y_avg, 0));

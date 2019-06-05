@@ -18,7 +18,7 @@ public class phyView {
         println("phyView.initShapes");
         println("number of elements: "+mdl.getNumberOfMats());
         for ( int i = 0; i < mdl.getNumberOfMats(); i++) {
-            float size = (float)mdl.getMatMassAt(i);
+            float size = (float)mdl.getMatMassAt(i) / 2;
             switch (mdl.getMatTypeAt(i)) {
             case Mass3D:
                 addColoredShape(
@@ -49,13 +49,13 @@ public class phyView {
         //println("phyView.renderShapes");
         PVector v;
         synchronized(lock) { 
-            for ( int i = 0; i < mdl.getNumberOfMats(); i++) {
+            for(int i = 0; i < mdl.getNumberOfMats(); i++) {
                 v = mdl.getMatPosAt(i).toPVector().mult(100.);
                 this.shapes.get(i).moveTo(v.x, v.y, v.z);
             }
 
-            for ( int i = 0; i < mdl.getNumberOfLinks(); i++) {
-                float weight = (float)(1 - mdl.getLinkElongationAt(i) / mdl.getLinkDistanceAt(i) - 0.0007) * 3000;
+            for(int i = 0; i < mdl.getNumberOfLinks(); i++) {
+                float weight = (float)(1 - mdl.getLinkElongationAt(i) / mdl.getLinkDistanceAt(i) - 0.0008) * 3000;
                 if(weight > 10) {
                     weight = 1;
                 }
@@ -86,6 +86,12 @@ public class phyView {
         for (Ellipsoid shape : shapes) {
             shape.draw();
         }
+    }
+
+
+    void highlightSelectedSpecimen(Vect3D pos) {
+        rect((float)pos.x*100, (float)pos.y*100, STRING_LEN*100, STRING_LEN*100);
+        //rect(0, 0, STRING_LEN, STRING_LEN);
     }
 
 

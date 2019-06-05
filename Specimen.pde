@@ -13,10 +13,10 @@ public class Specimen {
   String listeningPoint;
   Vect3D position;
   
-  public Specimen(float x, float y) {
+  public Specimen(Vect3D pos) {
     println("Specimen.Specimen");
     genome = new Genome(N_MASSES);
-    position = new Vect3D(x, y, 0);
+    position = new Vect3D(pos);
   }
 
 
@@ -24,7 +24,7 @@ public class Specimen {
     println("Specimen.addToModel");
     Vect3D newpos = new Vect3D(position);
     int n_masses = this.genome.masses.size();
-    float dist = ((float)STRING_LEN / n_masses);
+    float dist = ((float)STRING_LEN / (n_masses+1));
 
     for(int i = 0; i < n_masses; i++) {
       newpos.x += dist;
@@ -85,12 +85,12 @@ public class Specimen {
         sample = 0.;
       }
     }
-    return sample / N_STRINGS;
+    return sample / (N_ROWS*N_COLS);
   }
 
 
   void mutate() {
     println("Specimen.mutate");
-
+    this.genome.randomize(0.1);
   }
 }

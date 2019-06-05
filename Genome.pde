@@ -8,7 +8,7 @@ class MassGene {
     }
 
     void randomize(float factor) {
-        this.mass = GeneticUtils.randomize(this.mass, factor);
+        this.mass = GeneticUtils.randomizeValue(this.mass, factor);
     }
 
     // TODO copy ctor
@@ -27,9 +27,9 @@ class SpringGene {
     }
 
     void randomize(float factor) {
-        this.resting_length = GeneticUtils.randomize(this.resting_length, factor);
-        this.stiffness      = GeneticUtils.randomize(this.stiffness, factor);
-        this.damping        = GeneticUtils.randomize(this.damping, factor);
+        this.resting_length = GeneticUtils.randomizeValue(this.resting_length, factor);
+        this.stiffness      = GeneticUtils.randomizeValue(this.stiffness, factor);
+        this.damping        = GeneticUtils.randomizeValue(this.damping, factor);
     }
 
     // TODO copy ctor
@@ -50,11 +50,11 @@ public class Genome {
     
     void initGenome() {
         for(int i=0; i<this.n_masses; i++) {
-            this.masses.add(new MassGene(20));
+            this.masses.add(new MassGene(40));
         }
 
         for(int i=0; i<(this.n_masses+1); i++) {
-            this.springs.add(new SpringGene(0.0001, 1, 0.1));
+            this.springs.add(new SpringGene(0.001, 1, 0.1));
         }
     }
 

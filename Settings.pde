@@ -1,11 +1,18 @@
 
 
-int BASE_FRAMERATE = 60;
+// general settings
+static int BASE_FRAMERATE = 60;
+static int BASE_SAMPLERATE = 44100;
 
-float FRICTION = 0.00003;
-float GRAVITY = 0.;
+// simulation settings
+static float FRICTION = 0.00003;
+static float GRAVITY = 0.;
 
-float STRING_LEN = 4;
-int N_STRINGS = 6;
-int N_MASSES = 10;
+// population settings
+static int N_COLS = 3;
+static int N_ROWS = 3;
+static float STRING_LEN = 5;
+static float MARGIN = 2;
 
+// specimen settings
+static int N_MASSES = 10;
