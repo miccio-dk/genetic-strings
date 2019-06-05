@@ -16,3 +16,6 @@ static float MARGIN = 2;
 
 // specimen settings
 static int N_MASSES = 10;
+
+
+static float MUTATION_AMOUNT = 0.15;

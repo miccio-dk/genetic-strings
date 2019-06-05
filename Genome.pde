@@ -67,11 +67,6 @@ public class Genome {
             this.springs.add(new SpringGene(spring));
         }
     }
-
-
-    void init() {
-
-    }
     
 
     void initGenomeStandard() {

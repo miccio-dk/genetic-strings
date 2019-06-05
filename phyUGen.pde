@@ -35,8 +35,8 @@ public class PhyUGen extends UGen
       for (int i = 0; i < N_ROWS; ++i) {
         for (int j = 0; j < N_COLS; ++j) {
           Specimen s = new Specimen(GeneticUtils.specimenOrigin(i, j));
-          for (int k = 0; k < 5; ++k) {
-            s.genome.mutate(0.1);
+          for (int k = 0; k < 3; ++k) {
+            s.genome.mutate(MUTATION_AMOUNT);
           }
           this.population.add(s);
         }
@@ -98,9 +98,9 @@ public class PhyUGen extends UGen
 
   void evolve() {
     this.view.resetShapes();
-    for (int i = 0; i < 3; ++i) {
-      for(Specimen s : this.population) {
-        s.genome.mutate(0.05);
+    for(Specimen s : this.population) {
+      for (int i = 0; i < 5; ++i) {
+        s.genome.mutate(MUTATION_AMOUNT);
       }
     }
     this.initModel();
@@ -110,11 +110,13 @@ public class PhyUGen extends UGen
 
   void evolveFromSpecimen(Specimen parent) {
     this.view.resetShapes();
-    for (int i = 0; i < 3; ++i) {
-      for(Specimen s : this.population) {
-        s.genome = new Genome(parent.genome);
-        s.genome.mutate(0.05);
+    int n_passes = 0;
+    for(Specimen s : this.population) {
+      s.genome = new Genome(parent.genome);
+      for (int i = 0; i < n_passes; ++i) {
+        s.genome.mutate(MUTATION_AMOUNT);
       }
+      n_passes += 1;
     }
     this.initModel();
     this.view.initShapes(this.mdl);
