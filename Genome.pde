@@ -1,46 +1,5 @@
 import java.util.Arrays;
 
-class MassGene {
-    float mass;
-
-    public MassGene(float mass) {
-        this.mass = mass;
-    }
-
-    public MassGene(MassGene x) {
-        this.mass = x.mass;
-    }
-
-    void randomize(float factor) {
-        this.mass = GeneticUtils.randomizeValue(this.mass, factor);
-    }
-}
-
-
-class SpringGene {
-    float resting_length;
-    float stiffness;
-    float damping;
-    
-    public SpringGene(float resting_length, float stiffness, float damping) {
-        this.resting_length = resting_length;
-        this.stiffness = stiffness;
-        this.damping = damping;
-    }
-
-    public SpringGene(SpringGene x) {
-        this.resting_length = x.resting_length;
-        this.stiffness      = x.stiffness;
-        this.damping        = x.damping;
-    }
-
-    void randomize(float factor) {
-        this.resting_length = GeneticUtils.randomizeValue(this.resting_length, factor);
-        this.stiffness      = GeneticUtils.randomizeValue(this.stiffness, factor);
-        this.damping        = GeneticUtils.randomizeValue(this.damping, factor);
-    }
-}
-
 
 public class Genome {
     int n_masses;
@@ -71,10 +30,10 @@ public class Genome {
 
     void initGenomeStandard() {
         for(int i=0; i<this.n_masses; i++) {
-            this.masses.add(new MassGene(40));
+            this.masses.add(new MassGene());
         }
         for(int i=0; i<(this.n_masses+1); i++) {
-            this.springs.add(new SpringGene(0.001, 1, 0.1));
+            this.springs.add(new SpringGene());
         }
     }
 
@@ -87,5 +46,62 @@ public class Genome {
             spring_gene.randomize(factor);
         }
     }
-} 
 
+    String getDescription() {
+        String str = "";
+        for(int i=0; i<(this.n_masses+1); i++) {
+            SpringGene spring = this.springs.get(i);
+            str += String.format(
+                    "L0: %.2f, K: %.2f, Z: %.2f \n", 
+                    spring.resting_length, 
+                    spring.stiffness,
+                    spring.damping);
+            if(i < this.n_masses) {
+                MassGene mass = this.masses.get(i);
+                str += String.format("M: %.2f \n", mass.mass);
+            }
+        }
+        return str;
+    }
+
+    float[] getMassValues() {
+        float[] m = new float[n_masses];
+        int i = 0;
+        for(MassGene mass_gene : masses) {
+            m[i] = mass_gene.mass;
+            i++;
+        }
+        return m;
+    }
+
+    float[] getRestingLenValues() {
+        float[] rl = new float[n_masses+1];
+        int i = 0;
+        for(SpringGene spring_gene : springs) {
+            rl[i] = spring_gene.resting_length;
+            i++;
+        }
+        return rl;
+    }
+
+    float[] getStiffnessValues() {
+        float[] st = new float[n_masses+1];
+        int i = 0;
+        for(SpringGene spring_gene : springs) {
+            st[i] = spring_gene.stiffness;
+            i++;
+        }
+        return st;
+    }
+
+    float[] getDampingValues() {
+        float[] da = new float[n_masses+1];
+        int i = 0;
+        for(SpringGene spring_gene : springs) {
+            da[i] = spring_gene.damping;
+            i++;
+        }
+        return da;
+    }
+
+} 

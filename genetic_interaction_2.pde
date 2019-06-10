@@ -4,16 +4,17 @@ import peasy.*;
 
 
 private Object lock = new Object();
-PeasyCam cam;
 
-PhyUGen simUGen;
+PeasyCam cam;
 Minim minim;
 AudioOutput out;
 Gain gain;
+PhyUGen simUGen;
 float currAudio = 0;
 
 
 void setup() {
+  GeneticUtils.sketchRef = this;
   // setup view
   size(800, 800, P3D);
   cam = new PeasyCam(this, 1000);
@@ -25,35 +26,31 @@ void setup() {
   minim = new Minim(this);  
   out = minim.getLineOut();
   gain = new Gain(0);
-  simUGen = new PhyUGen(this);
+  simUGen = new PhyUGen(this, cam);
   simUGen.patch(gain).patch(out);
 }
 
 
 void draw() {
   // draw scene
-  background(0);
+  //background(0, );
+  fill(0, 0, 0, 255);
+  strokeWeight(0);
+  rect(-width*5, -height*5, width*10, height*10);
   directionalLight(126, 126, 126, 100, 0, -1);
   ambientLight(182, 182, 182);
+
+  // find selected specimen, draw everything
   simUGen.spin();
-  
-  // draw on screen display
-  cam.beginHUD();
-  stroke(125,125,255);
-  strokeWeight(2);
-  fill(0,0,60, 220);
-  rect(0,0, 250, 60);
-  textSize(16);
-  fill(255, 255, 255);
-  text("Curr Audio: " + currAudio, 10, 30);
-  text("FPS: " + frameRate, 10, 45);
-  cam.endHUD();
 }
+
+
+
 
 
 void mouseReleased() {
   Specimen selected = simUGen.getSelectedSpecimen();
   if(selected != null) {
-    simUGen.evolveFromSpecimen(selected);
+    simUGen.evolveFromSpecimen(selected, MUTATION_STDDEV);
   }
 }

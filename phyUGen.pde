@@ -12,16 +12,16 @@ public class PhyUGen extends UGen
   private ArrayList<Specimen> population;
   phyView view;
 
+  int prevNote = 0;
   float prevSample = 0;
   float audioOut = 0;
   PhysicalModel mdl;
 
 
-  public PhyUGen(PApplet pa)
-  {
+  public PhyUGen(PApplet pa, PeasyCam cam) {
     super();
     // create population, init model and 3d shapes
-    this.view = new phyView(pa);
+    this.view = new phyView(pa, cam);
     this.createInitialPopulation();
     this.initModel();
     this.view.initShapes(this.mdl);
@@ -34,11 +34,11 @@ public class PhyUGen extends UGen
       // add specimens to population
       for (int i = 0; i < N_ROWS; ++i) {
         for (int j = 0; j < N_COLS; ++j) {
-          Specimen s = new Specimen(GeneticUtils.specimenOrigin(i, j));
+          Specimen s = new Specimen(GeneticUtils.specimenOrigin(i, j), N_MASSES);
           for (int k = 0; k < 3; ++k) {
-            s.genome.mutate(MUTATION_AMOUNT);
+            s.genome.mutate(MUTATION_STDDEV*10);
           }
-          this.population.add(s);
+          this.population.add(s); //<>//
         }
       }
     }
@@ -53,7 +53,7 @@ public class PhyUGen extends UGen
       this.mdl.setFriction(FRICTION);
 
       // add specimens to model
-      this.addPlucktoModel(mdl);
+      this.addPluckToModel(mdl);
       int i = 0;
       for(Specimen s : this.population) {
         s.addToModel(this.mdl, ""+i);
@@ -68,8 +68,10 @@ public class PhyUGen extends UGen
     this.view.renderShapes(this.mdl);
     Specimen selected = getSelectedSpecimen();
     if(selected != null) {
-      this.view.highlightSelectedSpecimen(selected.position);
+      this.view.highlightSelectedSpecimen(selected);
+      this.view.plotSpecimenInfos(selected);
     }
+    this.view.showHUD();
   }
 
   
@@ -87,6 +89,8 @@ public class PhyUGen extends UGen
             mouse.x < (sorig.x+STRING_LEN) && 
             mouse.y > sorig.y && 
             mouse.y < (sorig.y+STRING_LEN)) {
+          // store position index
+          prevNote = i*N_COLS+j;
           return population.get(index);
         }
         index++;
@@ -108,30 +112,74 @@ public class PhyUGen extends UGen
   }
 
 
-  void evolveFromSpecimen(Specimen parent) {
+  void evolveFromSpecimen(Specimen parent, float mutation_coeff) {
+    // clear shape cache
     this.view.resetShapes();
-    int n_passes = 0;
+    int spec_index = 0;
+    int mass_index = 0;
+
+    // for each specimen...
     for(Specimen s : this.population) {
+      mass_index = 0;
+      // replace genome with parent's
       s.genome = new Genome(parent.genome);
-      for (int i = 0; i < n_passes; ++i) {
-        s.genome.mutate(MUTATION_AMOUNT);
+      // mutate new genome
+      s.genome.mutate(mutation_coeff);
+
+      // tune:
+      // get average mass and list of stiffness vals
+      float mass_avg = GeneticUtils.arrayAverage(s.genome.getMassValues());
+      float[] spring_stiff = s.genome.getStiffnessValues();
+      // for each mass in the specimen...
+      for(MassGene m : s.genome.masses) {
+        // extract stiffness of one of the springs connected
+        float k = spring_stiff[mass_index+1];
+        // extract desired oscillation speed
+        float omega = 2.0 * (float)Math.PI * GeneticUtils.indexToFreq(spec_index);
+        // normalize 
+        m.mass /= mass_avg;
+        // apply omega = sqrt(k/m)
+        m.mass *= k;
+        m.mass /= pow(omega, 2);
+        // TODO ???
+        m.mass *= 0.5e8;
+        // next mass
+        mass_index++;
       }
-      n_passes += 1;
+      println("NOTE " + spec_index + " - NEW MASS: " + s.genome.masses.get(4).mass);
+      spec_index++;
     }
+
+    // init stuff
     this.initModel();
     this.view.initShapes(this.mdl);
   }
 
 
   // create plucking device
-  void addPlucktoModel(PhysicalModel mdl) {
-    mdl.addMass2DPlane("guideM1", 1000000000, new Vect3D(2,-4,0.), vect3D0);
-    mdl.addMass2DPlane("guideM2", 1000000000, new Vect3D(4,-4,0.), vect3D0);
-    mdl.addMass2DPlane("guideM3", 1000000000, new Vect3D(3,-3,0.), vect3D0); 
-    mdl.addMass3D("percMass", 100, vect3D0, vect3D0);
-    mdl.addSpringDamper3D("test", 0.1, 1, 1., "guideM1", "percMass");
-    mdl.addSpringDamper3D("test", 0.1, 1, 1., "guideM2", "percMass");
-    mdl.addSpringDamper3D("test", 0.1, 1, 1., "guideM3", "percMass");
+  void addPluckToModel(PhysicalModel mdl) {
+    Vect3D mouse = GeneticUtils.mouseCoords(mouseX, mouseY, width, height);
+
+    mdl.addMass2DPlane("guideM1", 1000000000, new Vect3D(mouse.x-1, mouse.y, 0), GeneticUtils.vect3D0);
+    mdl.addMass2DPlane("guideM2", 1000000000, new Vect3D(mouse.x+1, mouse.y, 0), GeneticUtils.vect3D0);
+    mdl.addMass2DPlane("guideM3", 1000000000, new Vect3D(mouse.x, mouse.y-1, 0), GeneticUtils.vect3D0); 
+    mdl.addMass3D("percMass", 100, mouse, GeneticUtils.vect3D0);
+    mdl.addSpringDamper3D("test", 0.001, 2, 0.1, "guideM1", "percMass");
+    mdl.addSpringDamper3D("test", 0.001, 2, 0.1, "guideM2", "percMass");
+    mdl.addSpringDamper3D("test", 0.001, 2, 0.1, "guideM3", "percMass");
+
+  }
+
+
+  void movePluck() {
+    Vect3D mouse = GeneticUtils.mouseCoords(mouseX, mouseY, width, height);
+      
+    x_avg = (1-smooth) * x_avg + (smooth) * (float)mouse.x;
+    y_avg = (1-smooth) * y_avg + (smooth) * (float)mouse.y;
+    
+    this.mdl.setMatPosition("guideM1", new Vect3D(x_avg-1, y_avg, 0));
+    this.mdl.setMatPosition("guideM2", new Vect3D(x_avg+1, y_avg, 0));
+    this.mdl.setMatPosition("guideM3", new Vect3D(x_avg, y_avg-1, 0));
   }
   
 
@@ -144,14 +192,7 @@ public class PhyUGen extends UGen
   protected void uGenerate(float[] channels) {
     float sample = 0;
     synchronized(lock) {
-      Vect3D mouse = GeneticUtils.mouseCoords(mouseX, mouseY, width, height);
-      
-      x_avg = (1-smooth) * x_avg + (smooth) * (float)mouse.x;
-      y_avg = (1-smooth) * y_avg + (smooth) * (float)mouse.y;
-      
-      this.mdl.setMatPosition("guideM1", new Vect3D(x_avg-1, y_avg, 0));
-      this.mdl.setMatPosition("guideM2", new Vect3D(x_avg+1, y_avg, 0));
-      this.mdl.setMatPosition("guideM3", new Vect3D(x_avg, y_avg-1, 0));
+      this.movePluck();
       this.mdl.computeStep();
 
       // calculate the sample value

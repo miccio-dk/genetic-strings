@@ -1,27 +1,25 @@
 import java.util.Arrays;
+import miPhysics.Vect3D;
 
 
-float c_dist = 1;
-float c_gnd = 0.65;
+float c_dist = 0.5;
+float c_gnd = 1;
 float c_k = 1;
 float c_z = 1;
 
 
 public class Specimen {
-  // TODO genome
   Genome genome;
   String listeningPoint;
   Vect3D position;
   
-  public Specimen(Vect3D pos) {
-    println("Specimen.Specimen");
-    genome = new Genome(N_MASSES);
+  public Specimen(Vect3D pos, int n_masses) {
+    genome = new Genome(n_masses);
     position = new Vect3D(pos);
   }
 
 
   void addToModel(PhysicalModel mdl, String name) {
-    println("Specimen.addToModel");
     Vect3D newpos = new Vect3D(position);
     int n_masses = this.genome.masses.size();
     float dist = ((float)STRING_LEN / (n_masses+1));
@@ -32,7 +30,7 @@ public class Specimen {
       
       // extract mass and add to model
       MassGene mass_gene = this.genome.masses.get(i);
-      mdl.addMass2DPlane(GeneticUtils.makeName("str", name, i), mass_gene.mass, newpos, vect3D0);
+      mdl.addMass2DPlane(GeneticUtils.makeName("str", name, i), mass_gene.mass, newpos, GeneticUtils.vect3D0);
       mdl.addContact3D("col", c_dist, c_k, c_z, "percMass", GeneticUtils.makeName("str", name, i));
 
       // extract spring and add to model (starting from second mass)
@@ -77,7 +75,6 @@ public class Specimen {
 
 
   float getSample(PhysicalModel mdl) {
-    //println("Specimen.getSample");
     float sample = 0.;
     if(mdl.matExists(this.listeningPoint)) {
       sample = (float)(mdl.getMatPosition(this.listeningPoint).y - this.position.y);
