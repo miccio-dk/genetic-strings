@@ -12,7 +12,8 @@ public class phyView {
     float thickness;
     float fontSize;
     float plotHeight;
-
+    float legendWidth;
+    float[] plotRange;
 
     public phyView(PApplet pa, PeasyCam cam) {
         shapes = new ArrayList<Ellipsoid>();
@@ -21,7 +22,10 @@ public class phyView {
         margin = 5;
         thickness = 4;
         fontSize = 12;
-        plotHeight = 80;
+        plotHeight = 140;
+        legendWidth = 100;
+        plotRange = new float[] {-3, 1};
+
     }
 
 
@@ -136,44 +140,44 @@ public class phyView {
 
     void plotSpecimenInfos(Specimen s) {
         cam.beginHUD();
-        float w_legend = 100;
-        float d = (width - margin*2 - w_legend) / s.genome.n_masses;
 
         float[] minmax;
         float y1, y2, x;
 
         String[] stats = new String[] {"mass", "resting len", "stiffness", "damping"};
-        color[] stats_colors = new color[] {color(255, 255, 255), color(255, 0, 0), color(255, 255, 0), color(0, 0, 255)};
+        color[] stats_colors = new color[] {color(80, 80, 80), color(255, 0, 0), color(255, 255, 0), color(0, 0, 255)};
 
         drawHudRect(margin, height - plotHeight - margin*2, width-margin*2, plotHeight+margin*3);
+        drawPlotEdges();
 
         // mass
         float[] masses = s.genome.getMassValues();
+        for(int i=0; i<masses.length; i++) {
+            masses[i] /= 10;
+        }
         minmax = GeneticUtils.getMassMinMax();
-        drawPlot(masses, minmax, d, stats_colors[0], true);
+        drawPlot(masses, minmax, stats_colors[0], true);
         // spring resting len
         float[] restl = s.genome.getRestingLenValues();
         minmax = GeneticUtils.getRestingLenMinMax();
-        drawPlot(restl, minmax, d, stats_colors[1], false);
+        drawPlot(restl, minmax, stats_colors[1], false);
         // spring stiffness
         float[] stiff = s.genome.getStiffnessValues();
         minmax = GeneticUtils.getStiffnessMinMax();
-        drawPlot(stiff, minmax, d, stats_colors[2], false);
-
+        drawPlot(stiff, minmax, stats_colors[2], false);
         // spring damping
         float[] damp = s.genome.getDampingValues();
         minmax = GeneticUtils.getDampingMinMax();
-        drawPlot(damp, minmax, d, stats_colors[3], false);
+        drawPlot(damp, minmax, stats_colors[3], false);
 
         // legend
         float w = plotHeight/5;
-        float x_legend = margin - thickness;
-        stroke(0);
+        float x_legend = margin*2;
         fill(255);
+        strokeWeight(0);
         text("Specimen #" + simUGen.prevNote + "  (~" + GeneticUtils.indexToFreq(simUGen.prevNote) + " Hz)", x_legend, height-margin-(5*w)+w-thickness, 0);
         for(int i=0; i<4; i++) {
             float y = height - margin - (5*w) + (i+1)*w;
-            strokeWeight(thickness);
             fill(stats_colors[i]);
             rect(x_legend, y, w, w);
             text(stats[i], x_legend+w+5, y+w-thickness, 0);
@@ -190,17 +194,51 @@ public class phyView {
         rect(x, y, w, h);
     }
 
-    void drawPlot(float[] data, float[] minmax, float step, color c, boolean offset) {
+    void drawPlot(float[] data, float[] minmax, color c, boolean offset) {
+        float step = (width - margin*3 - legendWidth) / (data.length - (offset ? 0 : 1));
         stroke(c);
+        strokeWeight(1.5);
         float x, y1, y2;
-        float w_legend = 100;
         for(int i=0; i<(data.length-1); i++) {
-            x = (offset ? step/2 : 0) + w_legend + margin + i*step;
-            y1 = height - margin - GeneticUtils.normalize(data[i], minmax) * (plotHeight - margin*2);
-            y2 = height - margin - GeneticUtils.normalize(data[i+1], minmax) * (plotHeight - margin*2);
+            x = (offset ? step/2 : 0) + legendWidth + margin + i*step;
+            y1 = height - margin - GeneticUtils.normalize((float)Math.log10(data[i]), plotRange) * (plotHeight - margin*2);
+            y2 = height - margin - GeneticUtils.normalize((float)Math.log10(data[i+1]), plotRange) * (plotHeight - margin*2);
             line(x, y1, x+step, y2);
         }
     }
+
+    void drawPlotEdges() {
+        fill(255, 255, 255, 100);
+        stroke(255, 255, 255);
+        strokeWeight(1.5);
+        rect(legendWidth + margin, 
+                height - plotHeight - margin, 
+                (width - margin*3 - legendWidth), 
+                plotHeight);
+        stroke(255);
+        int nTicks = (int)(plotRange[1] - plotRange[0]);
+        for(int i=0; i<nTicks; i++) {
+            strokeWeight(1);
+            float y1 = GeneticUtils.normalize((float)Math.log10(pow(10, i+plotRange[0])), plotRange) * (plotHeight - margin*2);
+            
+            line(legendWidth + margin, 
+                height - margin - y1, 
+                width - margin*2, 
+                height - margin - y1);
+
+            strokeWeight(0.5);
+            for(int j=0; j<10; j++) {
+                float sub = pow(10, i+plotRange[0]) * j;
+                float y2 = GeneticUtils.normalize((float)Math.log10(sub), plotRange) * (plotHeight - margin*2);
+                println(""+sub);
+                line(legendWidth + margin, 
+                    height - margin - y2, 
+                    width - margin*2, 
+                    height - margin - y2);
+                }
+        }
+    }
+
 
 
     void resetShapes() {

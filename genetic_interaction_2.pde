@@ -21,6 +21,8 @@ void setup() {
   cam.setDistance(2500);
   cam.setActive(false);
   frameRate(BASE_FRAMERATE);
+  	
+  pixelDensity(2);
   
   // setup audio
   minim = new Minim(this);  
