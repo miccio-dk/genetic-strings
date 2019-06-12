@@ -132,20 +132,21 @@ public class PhyUGen extends UGen
       float[] spring_stiff = s.genome.getStiffnessValues();
       // for each mass in the specimen...
       for(MassGene m : s.genome.masses) {
-        // extract stiffness of one of the springs connected
+        // extract stiffness of one of the springs connected to it
         float k = spring_stiff[mass_index+1];
-        // extract desired oscillation speed
+        // calculate desired oscillation speed
         float omega = 2.0 * (float)Math.PI * GeneticUtils.indexToFreq(spec_index);
         // normalize 
         m.mass /= mass_avg;
         // apply omega = sqrt(k/m)
         m.mass *= k;
         m.mass /= pow(omega, 2);
-        // TODO ???
+        // multiply the mass by a huge number, because magic
         m.mass *= 0.5e8;
         // next mass
         mass_index++;
       }
+      // print value of one mass from each specimen
       println("NOTE " + spec_index + " - NEW MASS: " + s.genome.masses.get(4).mass);
       spec_index++;
     }
