@@ -35,7 +35,7 @@ public class PhyUGen extends UGen
       for (int i = 0; i < N_ROWS; ++i) {
         for (int j = 0; j < N_COLS; ++j) {
           Specimen s = new Specimen(GeneticUtils.specimenOrigin(i, j), N_MASSES);
-          for (int k = 0; k < 3; ++k) {
+          for (int k = 0; k < 1; ++k) {
             s.genome.mutate(MUTATION_STDDEV);
           }
           this.population.add(s); //<>//

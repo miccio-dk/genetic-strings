@@ -8,7 +8,7 @@ static int BASE_SAMPLERATE = 44100;
 static float FRICTION = 0.0005;
 static float GRAVITY = 0.;
 static float MUTATION_AMOUNT = 0.05;
-static float MUTATION_STDDEV = 0.1;
+static float MUTATION_STDDEV = 0.001;
 
 // population settings
 static int N_COLS = 3;

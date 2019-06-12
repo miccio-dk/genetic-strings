@@ -27,6 +27,13 @@ static class GeneticUtils {
         return val + sample*std;
     }
 
+    static float randomizeValueLog2(float val, float factor) {
+        float[] range = new float[] {0.9, 1.1};
+        float x = (float)Math.pow(10, (Math.random() * (Math.log10(range[1]) - Math.log10(range[0]))));
+        x *= range[0];
+        return val * x;
+    }
+
     static String makeName(String prefix, String specimen, int index) {
         return prefix + "_" + specimen + "_" + index;
     }

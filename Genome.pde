@@ -40,7 +40,7 @@ public class Genome {
 
     void mutate(float factor) {
         for(MassGene mass_gene : masses) {
-            mass_gene.randomize(factor);
+            //mass_gene.randomize(factor);
         }
         for(SpringGene spring_gene : springs) {
             spring_gene.randomize(factor);

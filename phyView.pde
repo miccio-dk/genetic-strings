@@ -209,13 +209,13 @@ public class phyView {
 
     void drawPlotEdges() {
         fill(255, 255, 255, 100);
-        stroke(255, 255, 255);
+        stroke(255, 255, 255, 100);
         strokeWeight(1.5);
         rect(legendWidth + margin, 
                 height - plotHeight - margin, 
                 (width - margin*3 - legendWidth), 
                 plotHeight);
-        stroke(255);
+        stroke(255, 255, 255, 100);
         int nTicks = (int)(plotRange[1] - plotRange[0]);
         for(int i=0; i<nTicks; i++) {
             strokeWeight(1);
