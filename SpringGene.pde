@@ -31,13 +31,13 @@ class SpringGene {
         this.damping        = x.damping;
     }
 
-    void randomize(float factor) {
+    void randomize(float factorLen, float factorStiff, float factorDamp) {
 //        println("\tresting_length: "+resting_length+
 //                "\tstiffness: "+stiffness+
 //                "\tdamping: "+damping);
-        this.resting_length = GeneticUtils.randomizeValueGaussian(this.resting_length, factor);
-        //this.stiffness      = GeneticUtils.randomizeValueLog2(this.stiffness, factor);
-        this.damping        = GeneticUtils.randomizeValueLog2(this.damping, factor);
+        this.resting_length = GeneticUtils.randomizeValueGaussian(this.resting_length, factorLen);
+        this.stiffness      = GeneticUtils.randomizeValueLogUniform(this.stiffness, factorStiff);
+        this.damping        = GeneticUtils.randomizeValueLogUniform(this.damping, factorDamp);
         this.resting_length = constrain(this.resting_length, MIN_RESTLEN, MAX_RESTLEN);
         this.stiffness      = constrain(this.stiffness, MIN_STIFF, MAX_STIFF);
         this.damping        = constrain(this.damping, MIN_DAMP, MAX_DAMP);

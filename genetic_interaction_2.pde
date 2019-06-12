@@ -53,6 +53,6 @@ void draw() {
 void mouseReleased() {
   Specimen selected = simUGen.getSelectedSpecimen();
   if(selected != null) {
-    simUGen.evolveFromSpecimen(selected, MUTATION_STDDEV);
+    simUGen.evolveFromSpecimen(selected);
   }
 }

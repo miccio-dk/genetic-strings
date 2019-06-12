@@ -10,12 +10,16 @@ float c_z = 1;
 
 public class Specimen {
   Genome genome;
-  String listeningPoint;
   Vect3D position;
+  int listeningIndex;
+  String listeningPoint;
+  Vect3D listeningPointPos;
   
-  public Specimen(Vect3D pos, int n_masses) {
+  public Specimen(Vect3D pos, int n_masses, int listeningIndex) {
     genome = new Genome(n_masses);
     position = new Vect3D(pos);
+    listeningIndex = listeningIndex;
+    listeningPointPos = new Vect3D(0, 0, 0);
   }
 
 
@@ -32,6 +36,11 @@ public class Specimen {
       MassGene mass_gene = this.genome.masses.get(i);
       mdl.addMass2DPlane(GeneticUtils.makeName("str", name, i), mass_gene.mass, newpos, GeneticUtils.vect3D0);
       mdl.addContact3D("col", c_dist, c_k, c_z, "percMass", GeneticUtils.makeName("str", name, i));
+
+      // store listening point position
+      if(i == listeningIndex) {
+        listeningPointPos = new Vect3D(newpos);
+      }
 
       // extract spring and add to model (starting from second mass)
       if (i > 0) {
@@ -70,14 +79,14 @@ public class Specimen {
         GeneticUtils.makeName("str", name, n_masses-1));
     mdl.addContact3D("col", c_gnd, 10, c_z, "percMass", GeneticUtils.makeName("gnd", name, 1));
 
-    this.listeningPoint = GeneticUtils.makeName("str", name, 4);
+    listeningPoint = GeneticUtils.makeName("str", name, listeningIndex);
   }
 
 
   float getSample(PhysicalModel mdl) {
     float sample = 0.;
     if(mdl.matExists(this.listeningPoint)) {
-      sample = (float)(mdl.getMatPosition(this.listeningPoint).y - this.position.y);
+      sample = (float)(mdl.getMatPosition(this.listeningPoint).y - listeningPointPos.y);
       if(!Float.isFinite(sample)) {
         sample = 0.;
       }

@@ -38,12 +38,12 @@ public class Genome {
     }
 
 
-    void mutate(float factor) {
+    void mutate() {
         for(MassGene mass_gene : masses) {
-            //mass_gene.randomize(factor);
+            mass_gene.randomize(MUTATION_STDDEV);
         }
         for(SpringGene spring_gene : springs) {
-            spring_gene.randomize(factor);
+            spring_gene.randomize(MUTATION_STDDEV, MUTATION_FACTOR, MUTATION_FACTOR);
         }
     }
 

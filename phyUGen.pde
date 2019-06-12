@@ -34,11 +34,11 @@ public class PhyUGen extends UGen
       // add specimens to population
       for (int i = 0; i < N_ROWS; ++i) {
         for (int j = 0; j < N_COLS; ++j) {
-          Specimen s = new Specimen(GeneticUtils.specimenOrigin(i, j), N_MASSES);
+          Specimen s = new Specimen(GeneticUtils.specimenOrigin(i, j), N_MASSES, LISTENING_POINT);
           for (int k = 0; k < 1; ++k) {
-            s.genome.mutate(MUTATION_STDDEV);
+            s.genome.mutate();
           }
-          this.population.add(s); //<>//
+          this.population.add(s); //<>// //<>//
         }
       }
     }
@@ -104,7 +104,7 @@ public class PhyUGen extends UGen
     this.view.resetShapes();
     for(Specimen s : this.population) {
       for (int i = 0; i < 5; ++i) {
-        s.genome.mutate(MUTATION_AMOUNT);
+        s.genome.mutate();
       }
     }
     this.initModel();
@@ -112,7 +112,7 @@ public class PhyUGen extends UGen
   }
 
 
-  void evolveFromSpecimen(Specimen parent, float mutation_coeff) {
+  void evolveFromSpecimen(Specimen parent) {
     // clear shape cache
     this.view.resetShapes();
     int spec_index = 0;
@@ -124,7 +124,7 @@ public class PhyUGen extends UGen
       // replace genome with parent's
       s.genome = new Genome(parent.genome);
       // mutate new genome
-      s.genome.mutate(mutation_coeff);
+      s.genome.mutate();
 
       // tune:
       // get average mass and list of stiffness vals
